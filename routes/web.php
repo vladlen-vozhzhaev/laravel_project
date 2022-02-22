@@ -18,9 +18,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/profile', [UserController::class, 'showProfile'])->name('profile');
-Route::post('updateProfile', [UserController::class, 'updateProfile'])->name('updateProfile');
-
+Route::get('/profile', [UserController::class, 'showProfile'])->middleware('auth')->name('profile');
+Route::post('updateProfile', [UserController::class, 'updateProfile'])->middleware('auth')->name('updateProfile');
+Route::get('/users', [UserController::class, 'showUsers'])->middleware('auth')->name('users');
+Route::post('/addFriend', [UserController::class, 'addFriend']);
+Route::get('/user/{id}', [UserController::class, 'showProfile']);
+Route::get('/chat/{id}', [\App\Http\Controllers\ChatController::class, 'showChat'])->name('showChat');
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');

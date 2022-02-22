@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Friends;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
@@ -9,8 +11,12 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public static function showProfile(){
-        $user = auth()->user();
+    public static function showProfile(Request $request){
+        if(!empty($request->id)){
+            $user = User::where('id', $request->id)->first();
+        }else{
+            $user = auth()->user();
+        }
         return view('pages.profile', ['user'=>$user]);
     }
     public static function updateProfile(Request $request){
@@ -45,5 +51,30 @@ class UserController extends Controller
         }
         $user->save();
         return redirect()->route('profile');
+    }
+
+    public static function showUsers(){
+        $users_fromDB = User::all();
+        $friends_fromDB = Friends::all();
+        $users = [];
+        $friends = [];
+        foreach ($users_fromDB as $user){
+            foreach ($friends_fromDB as $friend){
+                if($friend->friend_id == $user->id) {
+                    $friends[] = $user;
+                    continue 2;
+                }
+            }
+            $users[] = $user;
+        }
+        return view('pages.users', ['users'=>$users, 'friends'=>$friends]);
+    }
+    public static function addFriend(Request $request){
+        $userId = auth()->user()->getAuthIdentifier();
+        $friend = new Friends();
+        $friend->user_id = $userId;
+        $friend->friend_id = $request->friend_id;
+        $friend->save();
+        return redirect()->route('users');
     }
 }

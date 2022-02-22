@@ -17,19 +17,7 @@
 
                         <p class="text-muted text-center">{{$user->bdate}}</p>
 
-                        <ul class="list-group list-group-unbordered mb-3">
-                            <li class="list-group-item">
-                                <b>Followers</b> <a class="float-right">1,322</a>
-                            </li>
-                            <li class="list-group-item">
-                                <b>Following</b> <a class="float-right">543</a>
-                            </li>
-                            <li class="list-group-item">
-                                <b>Friends</b> <a class="float-right">13,287</a>
-                            </li>
-                        </ul>
-
-                        <a href="#" class="btn btn-primary btn-block"><b>Follow</b></a>
+                        <a href="/chat/{{$user->id}}" class="btn btn-primary btn-block"><b>Написать сообщение</b></a>
                     </div>
                     <!-- /.card-body -->
                 </div>
