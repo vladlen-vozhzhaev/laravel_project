@@ -58,16 +58,25 @@ class UserController extends Controller
         $friends_fromDB = Friends::all();
         $users = [];
         $friends = [];
+        $newFriends = [];
         foreach ($users_fromDB as $user){
             foreach ($friends_fromDB as $friend){
-                if($friend->friend_id == $user->id) {
+                if($friend->friend_id == $user->id and $user->id != auth()->user()->getAuthIdentifier()) {
                     $friends[] = $user;
                     continue 2;
                 }
             }
             $users[] = $user;
         }
-        return view('pages.users', ['users'=>$users, 'friends'=>$friends]);
+        foreach ($users_fromDB as $user){
+            foreach ($friends_fromDB as $friend){
+                if($friend->friend_id == auth()->user()->getAuthIdentifier() and $user->id != auth()->user()->getAuthIdentifier() and !$friend->agree) {
+                    $newFriends[] = $user;
+                    continue 2;
+                }
+            }
+        }
+        return view('pages.users', ['users'=>$users, 'friends'=>$friends, 'newFriends'=>$newFriends]);
     }
     public static function addFriend(Request $request){
         $userId = auth()->user()->getAuthIdentifier();

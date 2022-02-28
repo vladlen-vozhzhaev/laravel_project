@@ -24,6 +24,8 @@ Route::get('/users', [UserController::class, 'showUsers'])->middleware('auth')->
 Route::post('/addFriend', [UserController::class, 'addFriend']);
 Route::get('/user/{id}', [UserController::class, 'showProfile']);
 Route::get('/chat/{id}', [\App\Http\Controllers\ChatController::class, 'showChat'])->name('showChat');
+Route::post('/receivingMessage', [\App\Http\Controllers\ChatController::class, 'receivingMessage']);
+Route::post('/getMessage', [\App\Http\Controllers\ChatController::class, 'getMessage']);
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');

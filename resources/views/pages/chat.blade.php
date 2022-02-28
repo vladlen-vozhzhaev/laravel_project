@@ -23,38 +23,42 @@
                 <!-- /.card-header -->
                 <div class="card-body">
                     <!-- Conversations are loaded here -->
-                    <div class="direct-chat-messages">
-                        <!-- Message. Default to the left -->
-                        <div class="direct-chat-msg">
-                            <div class="direct-chat-infos clearfix">
-                                <span class="direct-chat-name float-left">Alexander Pierce</span>
-                                <span class="direct-chat-timestamp float-right">23 Jan 2:00 pm</span>
-                            </div>
-                            <!-- /.direct-chat-infos -->
-                            <img class="direct-chat-img" src="../dist/img/user1-128x128.jpg" alt="Message User Image">
-                            <!-- /.direct-chat-img -->
-                            <div class="direct-chat-text">
-                                Is this template really for free? That's unbelievable!
-                            </div>
-                            <!-- /.direct-chat-text -->
-                        </div>
-                        <!-- /.direct-chat-msg -->
-
-                        <!-- Message to the right -->
-                        <div class="direct-chat-msg right">
-                            <div class="direct-chat-infos clearfix">
-                                <span class="direct-chat-name float-right">Sarah Bullock</span>
-                                <span class="direct-chat-timestamp float-left">23 Jan 2:05 pm</span>
-                            </div>
-                            <!-- /.direct-chat-infos -->
-                            <img class="direct-chat-img" src="../dist/img/user3-128x128.jpg" alt="Message User Image">
-                            <!-- /.direct-chat-img -->
-                            <div class="direct-chat-text">
-                                You better believe it!
-                            </div>
-                            <!-- /.direct-chat-text -->
-                        </div>
-                        <!-- /.direct-chat-msg -->
+                    <div class="direct-chat-messages" id="messageBox">
+                        @foreach($chat as $message)
+                            @if($message->from == $currentUser->id)
+                                <!-- Наши сообщения -->
+                                    <div class="direct-chat-msg right">
+                                        <div class="direct-chat-infos clearfix">
+                                            <span class="direct-chat-name float-right">{{$currentUser->name}} {{$currentUser->lastname}}</span>
+                                            <span class="direct-chat-timestamp float-left">{{$message->crated_at}}</span>
+                                        </div>
+                                        <!-- /.direct-chat-infos -->
+                                        <img class="direct-chat-img" src="{{$currentUser->avatar}}" alt="Message User Image">
+                                        <!-- /.direct-chat-img -->
+                                        <div class="direct-chat-text">
+                                            {{$message->message}}
+                                        </div>
+                                        <!-- /.direct-chat-text -->
+                                    </div>
+                                    <!-- /.direct-chat-msg -->
+                            @else
+                                <!-- Сообщения собеседника -->
+                                    <div class="direct-chat-msg">
+                                        <div class="direct-chat-infos clearfix">
+                                            <span class="direct-chat-name float-left">{{$user->name}} {{$user->lastname}}</span>
+                                            <span class="direct-chat-timestamp float-right">{{$message->crated_at}}</span>
+                                        </div>
+                                        <!-- /.direct-chat-infos -->
+                                        <img class="direct-chat-img" src="{{$user->avatar}}" alt="Message User Image">
+                                        <!-- /.direct-chat-img -->
+                                        <div class="direct-chat-text">
+                                            {{$message->message}}
+                                        </div>
+                                        <!-- /.direct-chat-text -->
+                                    </div>
+                                    <!-- /.direct-chat-msg -->
+                                @endif
+                        @endforeach
                     </div>
                     <!--/.direct-chat-messages-->
 
@@ -83,11 +87,13 @@
                 </div>
                 <!-- /.card-body -->
                 <div class="card-footer">
-                    <form action="#" method="post">
+                    <form onsubmit="sendMessage(this); return false;">
+                        @csrf
+                        <input name="to" type="hidden" value="{{$user->id}}">
                         <div class="input-group">
-                            <input type="text" name="message" placeholder="Type Message ..." class="form-control">
+                            <input type="text" name="message" placeholder="Напишите сообщение" class="form-control">
                             <span class="input-group-append">
-                      <button type="submit" class="btn btn-primary">Send</button>
+                      <button type="submit" class="btn btn-primary">Отправить</button>
                     </span>
                         </div>
                     </form>
@@ -97,4 +103,69 @@
             <!--/.direct-chat -->
         </div>
     </div>
+
+    <script>
+        // Можно сделать
+        function sendMessage(form){
+            let formData = new FormData(form);
+            fetch('/receivingMessage',{
+                method: "POST",
+                body: formData
+            }).then(response=>response.json())
+            .then(result=>{
+                if(result.result == 'success'){
+                    messageBox.innerHTML += `<div class="direct-chat-msg right">
+                        <div class="direct-chat-infos clearfix">
+                            <span class="direct-chat-name float-right">{{$currentUser->name}} {{$currentUser->lastname}}</span>
+                            <span class="direct-chat-timestamp float-left">${$date = new Date()}</span>
+                        </div>
+                        <img class="direct-chat-img" src="{{$currentUser->avatar}}" alt="Message User Image">
+                        <div class="direct-chat-text">${formData.get('message')}</div>
+                    </div>`;
+                }
+            });
+
+        }
+
+        // Нельзя
+        function getMessage(){
+            setInterval(()=>{
+                let token = document.getElementsByName('_token')[0].value;
+                let formData = new FormData();
+                formData.append('chat_id', {{$user->id}})
+                formData.append('_token', token);
+                fetch('/getMessage', {
+                    method: 'post',
+                    body: formData
+                }).then(response=>response.json())
+                .then(result=> {
+                    messageBox.innerHTML = '';
+                    for (let i = 0; i < result.length; i++) {
+                        message = result[i];
+                        if (message.from == {{$currentUser->id}})
+                            messageBox.innerHTML += `
+                            <div class="direct-chat-msg right">
+                                <div class="direct-chat-infos clearfix">
+                                    <span class="direct-chat-name float-right">{{$currentUser->name}} {{$currentUser->lastname}}</span>
+                                    <span class="direct-chat-timestamp float-left">${message.crated_at}</span>
+                                </div>
+                                <img class="direct-chat-img" src="{{$currentUser->avatar}}" alt="Message User Image">
+                                    <div class="direct-chat-text">${message.message}</div>
+                            </div>`;
+                        else
+                            messageBox.innerHTML += ` <div class="direct-chat-msg">
+                                <div class="direct-chat-infos clearfix">
+                                    <span class="direct-chat-name float-left">{{$user->name}} {{$user->lastname}}</span>
+                                    <span class="direct-chat-timestamp float-right">${message.crated_at}</span>
+                                </div>
+                                <img class="direct-chat-img" src="{{$user->avatar}}" alt="Message User Image">
+                                    <div class="direct-chat-text">${message.message}</div>
+                            </div>`;
+                    }
+
+                });
+            }, 3000);
+        }
+        getMessage();
+    </script>
 @endsection

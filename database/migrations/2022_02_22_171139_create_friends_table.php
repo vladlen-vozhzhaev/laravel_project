@@ -18,6 +18,7 @@ class CreateFriendsTable extends Migration
             $table->timestamps();
             $table->bigInteger('user_id');
             $table->bigInteger('friend_id');
+            $table->boolean('agree')->nullable()->default(0);
         });
     }
 

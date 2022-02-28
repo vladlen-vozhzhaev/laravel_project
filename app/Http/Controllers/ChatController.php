@@ -40,6 +40,29 @@ class ChatController extends Controller
             return redirect()->route('showChat', ['id' => $userId]);
         }
         $user = User::where('id', $userId)->first();
-        return view('pages.chat', ['currentUser'=>auth()->user(), 'user'=>$user, 'chat'=>$findChat]);
+        $chat = DB::table($findChat->name_chat)->get();
+        return view('pages.chat', ['currentUser'=>auth()->user(), 'user'=>$user, 'chat'=>$chat]);
+    }
+    // Метод приёма сообшения от клиента
+    public static function receivingMessage(Request $request){
+        $formId = auth()->user()->getAuthIdentifier();
+        $toId = $request->to;
+        $message = $request->message;
+        $chatId = $request->to;
+        $chat = Chats::where('id',$chatId)->first();
+        $chatName = $chat->name_chat;
+        DB::table($chatName)->insert([
+            'message'=>$message,
+            'to'=>$toId,
+            'from'=>$formId
+        ]);
+        return json_encode(['result'=>'success']);
+    }
+    public static function getMessage(Request $request){
+        $chatId = $request->chat_id;
+        $chat = Chats::where('id',$chatId)->first();
+        $chatName = $chat->name_chat;
+        $chat = DB::table($chatName)->get();
+        return json_encode($chat);
     }
 }
